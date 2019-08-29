@@ -56,7 +56,9 @@ const knex = Knex({
         database: 'postgres'
     }
 });
+
 const deleteUser = (userId) => knex('users').where('id', userId).del();
+
 const getUsers = () => knex.select('*').from('users').orderBy('id').then(users => users.map(UserDto.fromDb)).catch(console.log);
 
 const updateUser = (user) => knex('users')
@@ -66,13 +68,13 @@ const updateUser = (user) => knex('users')
     .update(user)
     .then(() => {
         return getUsers();
-    }).catch(console.log);
+    }).catch(console.log); // Stronger error handling is needed
 
 const createUser = async (user) => knex.insert(user)
     .into('users')
     .then(() => {
         return getUsers();
-    }).catch(console.log);
+    }).catch(console.log); // Stronger error handling is needed
 
 const getHandler = async (req, res) => {
     // We could extend this to return a single user based on a query param
@@ -108,15 +110,13 @@ const putHandler = async (req, res) => {
 };
 
 const deleteHandler = async (req, res) => {
-    // extract user id here
     const userId = req.query.id;
-    console.log('delete: ', userId);
+
     try {
-        const deleted = await deleteUser(userId);
+        await deleteUser(userId);
     } catch {
         return res.status(500).json({});
     }
-
 
     return res.status(204).json({});
 };
