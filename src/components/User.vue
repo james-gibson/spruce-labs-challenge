@@ -1,105 +1,123 @@
 <template>
-  <div :id="id" class="card flex-row">
-    <div class="toolbar flex-row" v-if="!this.isEditing">
-      <div class="avatar">
-        <img v-if="this.user.avatarurl" alt="User Avatar" :src="this.user.avatarurl" />
-        <a @click="enableEdit">Edit</a>
+  <section :id="id" class="user-card">
+    <div class="flex-row">
+      <img class="avatar" :src="computedAvatar" :alt="computedName + '\'s avatar'" />
+      <div class="data-column">
+        <h4>{{computedName}}</h4>
+        <p v-if="emailAddress">Email address: {{emailAddress}}</p>
+        <p v-if="phoneNumber">Phone number: {{phoneNumber}}</p>
+        <p>User ID: {{userId}}</p>
       </div>
-      <div>
-        <p class="montserrat">{{emailAddress}} : {{lastName}}, {{firstName}}</p>
-      </div>
-    </div>
-    <div v-if="this.isEditing">
-      <div class="avatar">
-        <img alt="User Avatar" :src="this.localUserCopy.avatarUrl" />
-        <button @click="destroyUser()">Delete User</button>
-      </div>
-      <div>
-        <label for="firstname">First Name:</label>
-        <input id="firstname" v-model="localUserCopy.firstname" />
-
-        <label for="lastname">Last Name:</label>
-        <input id="lastname" v-model="localUserCopy.lastname" />
-
-        <label for="emailaddress">Email Address:</label>
-        <input id="emailaddress" type="email" v-model="localUserCopy.emailaddress" />
-
-        <label for="phonenumber">Cell Phone:</label>
-        <input id="phonenumber" type="tel" v-model="localUserCopy.phonenumber" />
-
-        <label for="avatarurl">Avatar Url:</label>
-        <input id="avatarurl" type="url" v-model="localUserCopy.avatarurl" />
-      </div>
-      <div class="flex-row">
-        <button @click="disableEditMode">Cancel</button>
-        <button @click="save">Save</button>
+      <div class="buttons">
+        <button class="primary" @click="toggleModal">Edit</button>
+        <button class="secondary" @click="destroyUser">Delete</button>
       </div>
     </div>
-  </div>
+    <user-modal
+      :first-name="firstName"
+      :last-name="lastName"
+      :email-address="emailAddress"
+      :user-id="userId"
+      :id="id"
+      :phone-number="phoneNumber"
+      :avatar-url="avatarUrl"
+      :is-shown="showModal"
+      cta-copy="Save"
+      secondary-copy="Cancel"
+      @onclose="toggleModal"
+      @onsave="(obj) => onSave(obj)"
+    ></user-modal>
+  </section>
 </template>
 
 <script>
 import { mapActions } from "vuex";
+import UserModal from "./UserModal.vue";
 export default {
   name: "User",
-  created() {
-    this.localUserCopy = this.$store.state.userCopy;
-  },
-  updated() {
-    this.localUserCopy = this.$store.state.userCopy;
-  },
   data() {
     return {
-      localUserCopy: {}
+      showModal: false
     };
   },
   computed: {
-    isEditing() {
-      if (!this.user.id || !this.$store.state.editEnabledId) {
-        return false;
-      }
-      return this.user.id == this.$store.state.editEnabledId;
+    computedName() {
+      return `${this.firstName} ${this.lastName}`;
     },
-    userCopy() {
-      return this.$store.state.userCopy;
+    computedAvatar() {
+      return this.avatarUrl
+        ? this.avatarUrl
+        : "https://66.media.tumblr.com/tumblr_nhgr5fWO3L1tjxym6o1_1420057203_cover.jpg";
     }
   },
   methods: {
-    ...mapActions([
-      "saveUser",
-      "deleteUser",
-      "getUsers",
-      "enableEditMode",
-      "disableEditMode"
-    ]),
-    enableEdit() {
-      this.enableEditMode(this);
-      this.localUserCopy = Object.assign({}, this.userCopy);
+    ...mapActions(["saveUser", "deleteUser", "getUsers"]),
+    toggleModal() {
+      this.showModal = !this.showModal;
     },
-    disableEdit() {
-      this.localUserCopy = {};
-      this.disableEditMode();
+    onSave(formObj) {
+      this.saveUser(formObj);
+      this.toggleModal();
       this.getUsers();
-    },
-    save() {
-      const user = this.localUserCopy || {};
-      this.saveUser(user);
-      this.getUsers();
-      this.disableEditMode();
     },
     destroyUser() {
-      const userIdToDelete = this.localUserCopy.id;
+      const userIdToDelete = this.id;
 
       this.deleteUser(userIdToDelete);
     }
   },
+  components: {
+    UserModal
+  },
   props: {
     id: String,
-    user: Object,
     firstName: String,
     lastName: String,
     emailAddress: String,
-    userId: String
+    userId: String,
+    phoneNumber: String,
+    avatarUrl: String
   }
 };
 </script>
+
+<style lang="scss" scoped>
+// neutrals
+$arctic: #f4f4f4;
+$haze: #d3d3d1;
+$onyx: #333745;
+$pitch: #21232c;
+// primaries
+$lemon: #ffee11;
+$sunny: #fff266;
+
+.user-card {
+  padding: 1.5rem;
+  margin: 1rem;
+  width: 50%;
+  max-width: 860px;
+  min-width: 600px;
+  box-sizing: border-box;
+  background-color: $pitch;
+  border: 1px solid $sunny;
+
+  .flex-row {
+    .avatar {
+      height: 3rem;
+      width: 3rem;
+      border-radius: 50%;
+    }
+
+    .data-column {
+      flex-grow: 1;
+      padding: 0 1.5rem;
+    }
+
+    .buttons {
+      button {
+        display: block;
+      }
+    }
+  }
+}
+</style>

@@ -4,44 +4,46 @@
       <h1>User Management App</h1>
     </header>
     <main class="container">
-      <section class="container-inner">
+      <button class="add-btn" @click="toggleModal">Add User</button>
+      <section class="user-container">
         <User
           v-for="user in users"
           :key="user.id"
-          :user="user"
-          :firstName="user.firstname"
-          :lastName="user.lastname"
-          :emailAddress="user.emailaddress"
-          :userId="user.userid"
+          :first-name="user.firstName"
+          :last-name="user.lastName"
+          :email-address="user.emailAddress"
+          :user-id="user.userId"
+          :id="user.id"
+          :phone-number="user.phoneNumber"
+          :avatar-url="user.avatarUrl"
         />
       </section>
-      <div class="toolbar flex-row">
-        <!-- <input
-          placeholder="Say something!"
-          @keypress.enter="onSubmit"
-          type="text"
-          name="message"
-          v-model="message"
-        />-->
-        <button class="secondary" @click="onSubmit">Add User</button>
-      </div>
     </main>
+    <user-modal
+      :is-shown="showModal"
+      cta-copy="Add User"
+      secondary-copy="Cancel"
+      @onclose="toggleModal"
+      @onsave="onModalSave"
+    ></user-modal>
   </div>
 </template>
 
 <script>
 import { mapActions } from "vuex";
 import User from "./components/User.vue";
+import UserModal from "./components/UserModal.vue";
 
 export default {
   name: "app",
   data() {
     return {
-      user: ""
+      showModal: false
     };
   },
   components: {
-    User
+    User,
+    UserModal
   },
   computed: {
     users() {
@@ -50,11 +52,12 @@ export default {
   },
   methods: {
     ...mapActions(["createUser", "getUsers"]),
-    onSubmit() {
-      this.createUser(this.user);
-      this.user = "";
+    toggleModal() {
+      this.showModal = !this.showModal;
     },
-    onRefresh() {
+    onModalSave(user) {
+      this.createUser(user);
+      this.toggleModal();
       this.getUsers();
     }
   }
@@ -62,143 +65,128 @@ export default {
 </script>
 
 <style lang="scss">
-@import url("https://fonts.googleapis.com/css?family=Arvo:400,700|Montserrat:300,400,600,700");
-@import url("https://fonts.googleapis.com/css?family=Heebo|Mali&display=swap");
+// fonts
+@import url("https://fonts.googleapis.com/css?family=Montserrat|Zilla+Slab&display=swap");
 
 // neutrals
 $arctic: #f4f4f4;
-$onyx: #333745;
 $haze: #d3d3d1;
+$onyx: #333745;
+$pitch: #21232c;
 // primaries
 $lemon: #ffee11;
 $sunny: #fff266;
-$tiger: #5c3972;
-$lilac: #ebcffc;
-$rose: #fca7a7;
 
+html,
 body {
-  font-family: "Montserrat";
   background-color: $onyx;
-  color: $onyx;
+  padding: 0;
+  margin: 0;
+  min-height: 100vh;
+  min-width: 100vw;
+}
+body {
+  background-color: $onyx;
+  color: $haze;
+  padding: 0 4rem;
+  text-rendering: optimizeLegibility;
 
-  h1 {
-    color: $lemon;
-  }
   p {
     font-size: 16px;
-    font-weight: normal;
     line-height: 1.35;
   }
 
-  .avatar {
-    padding-left: 0.5rem;
-    margin: 0.5rem;
-    width: 3rem;
-    height: 3rem;
-    img {
-      width: inherit;
-      height: inherit;
-    }
-  }
-
-  .dark {
-    background-color: $onyx;
-    color: $haze;
-  }
-
-  .montserrat {
-    font-family: "Montserrat";
-  }
-
-  button {
-    height: 3.5rem;
-    width: 10rem;
-    font-size: 16px;
-    margin-right: 2rem;
-    padding: 0.5rem 2rem;
-    text-align: center;
-    border: none;
-    font-family: "Montserrat";
-    font-family: "Heebo";
-  }
-}
-
-.flex-row {
-  width: 80%;
-  margin: 2rem auto;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-
-  input {
-    width: 70%;
-  }
-  input,
-  button {
-    flex: 1 0;
-  }
-
-  input {
-    background-color: transparent;
+  h1,
+  h2,
+  h3 {
+    font-family: "Montserrat", Helvetica, sans-serif;
     color: $arctic;
   }
-}
+  h4,
+  h5,
+  h6,
+  p {
+    font-family: "Zilla Slab", Courier, serif;
+  }
+  h1 {
+    font-size: 5rem;
+    text-shadow: 1px 0 $sunny;
+  }
+  h2 {
+    font-size: 3rem;
+  }
+  h3 {
+    font-size: 1.75rem;
+  }
+  h4 {
+    font-size: 1.5rem;
+    text-transform: lowercase;
+    font-variant: small-caps;
+    letter-spacing: 0.25rem;
+  }
+  h5 {
+    font-size: 1.25rem;
+    text-transform: lowercase;
+    font-variant: small-caps;
+    letter-spacing: 0.125rem;
+  }
+  h6 {
+    font-size: 1.125rem;
+    letter-spacing: 0.5rem;
+    text-shadow: 1px 2px $pitch;
+  }
+  a {
+    color: $lemon;
+  }
 
-.row {
-  width: 80%;
-  margin: 2rem auto;
-  text-align: center;
-}
-
-.card {
-  margin-bottom: 2rem;
-  height: auto;
-  min-height: 4rem;
-  width: 5rems;
-  background-color: $haze;
-  display: flex;
-  align-items: flex-end;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-
-  button {
-    width: 50%;
-    margin-right: 0;
-
-    &.secondary {
-      background-color: $haze;
-      border-bottom-left-radius: 20px;
+  ul {
+    padding: 0;
+    li {
+      list-style: none;
+      border-bottom: 2px solid $pitch;
+      padding-bottom: 2rem;
     }
   }
-}
 
-.left {
-  flex-direction: left;
-}
-
-.right {
-  flex-direction: right;
-  margin-right: auto;
-}
-
-#app {
-  text-align: center;
-  background-color: $onyx;
-
-  .container {
-    .container-inner {
-      flex-direction: row-reverse;
-      height: 65vh;
-      overflow-y: scroll;
-      display: flex-row;
-    }
-
-    .toolbar {
-      input {
-        height: 3rem;
-        margin-right: 2rem;
+  header {
+    nav {
+      ul li {
+        border: none;
+        display: inline-block;
       }
     }
+  }
+
+  .user-container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .flex-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  button {
+    width: 100%;
+    font-size: 16px;
+    margin-right: 2rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 2rem;
+    font-family: "Montserrat";
+    position: relative;
+    text-align: left;
+    padding-left: 2rem;
+    font-variant: small-caps;
+    color: $arctic;
+    border: 3px solid $arctic;
+    background-color: $onyx;
+  }
+
+  .add-btn {
+    width: 10%;
+    min-width: 288px;
   }
 }
 </style>

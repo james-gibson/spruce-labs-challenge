@@ -42,20 +42,7 @@ The vue app.
 
 ### `index.js`
 
-Cloud function handler. Manages
-
-- GET: `/` returns `{ messages:{id:number, userid:string, avatarurl:string, msg:string}[], error }`
-- POST: `/` with body
-
-```
-{id:number, userid:string, avatarurl:string, msg:string}
-```
-
-returns
-
-```
-{ messages:{id:number, userid:string, avatarurl:string, msg:string}[], error }
-```
+Cloud function handler. See https://james-gibson.github.io/spruce-labs-challenge/swagger/
 
 ## Notes
 
@@ -64,12 +51,12 @@ returns
 ```
 CREATE TABLE users (
     id bigint primary key,
-    userId varchar(20) NOT NULL,
-    avatarUrl varchar(200) NOT NULL,
-    firstName varchar(30) NOT NULL,
-    lastName varchar(30) NOT NULL,
-    phoneNumber varchar(20) NOT NULL,
-    emailAddress varchar(200) NOT NULL
+    userid varchar(20) NOT NULL,
+    avatarurl varchar(200) NOT NULL,
+    firstname varchar(30) NOT NULL,
+    lastname varchar(30) NOT NULL,
+    phonenumber varchar(20) NOT NULL,
+    emailaddress varchar(200) NOT NULL
 );
 ```
 
@@ -93,9 +80,11 @@ CREATE TABLE users (
 
 ## Bugs
 
+- Add user modal doesn't clear on save
 - Server crashes without reporting an error.
 - Linting currently doesnt pass
 
-## Problems encountered:
+## Why did I make the decisions I did?
 
-## -
+- Users: One of the most common CRUD use cases, simple to test
+- Serverless: Enable dynamic scaling based on service load (We'd have to adjust the cloud db to handle more concurrent connections)

@@ -5,16 +5,15 @@ const shortid = require('shortid');
 const connectionName = process.env.INSTANCE_CONNECTION_NAME;
 
 const UserDto = {
-    extractUser: input => {
-        console.log('extract: ', input)
+    fromReq: input => {
         // I would use stronger input validation in prod
-        const id = Number(input.id);
-        const userid = String(SqlString.escape(input.userid).replace(/["']/g, "")) || shortid.generate();
-        const avatarurl = String(SqlString.escape(input.avatarurl).replace(/["']/g, "")) || "";
-        const firstname = String(SqlString.escape(input.firstname).replace(/["']/g, "")) || "";
-        const lastname = String(SqlString.escape(input.lastname).replace(/["']/g, "")) || "";
-        const phonenumber = String(SqlString.escape(input.phonenumber).replace(/["']/g, "")) || "";
-        const emailaddress = String(SqlString.escape(input.emailaddress).replace(/["']/g, "")) || "";
+        const id = Number(input.id) || Date.now();
+        const userid = String(SqlString.escape(input.userId).replace(/["']/g, "")) || shortid.generate();
+        const avatarurl = String(SqlString.escape(input.avatarUrl).replace(/["']/g, "")) || "";
+        const firstname = String(SqlString.escape(input.firstName).replace(/["']/g, "")) || "";
+        const lastname = String(SqlString.escape(input.lastName).replace(/["']/g, "")) || "";
+        const phonenumber = String(SqlString.escape(input.phoneNumber).replace(/["']/g, "")) || "";
+        const emailaddress = String(SqlString.escape(input.emailAddress).replace(/["']/g, "")) || "";
 
         return {
             id,
@@ -25,8 +24,29 @@ const UserDto = {
             phonenumber,
             emailaddress
         };
+    },
+    fromDb: input => {
+        // I would use stronger input validation in prod
+        const id = String(input.id);
+        const userId = String(SqlString.escape(input.userid).replace(/["']/g, "")) || shortid.generate();
+        const avatarUrl = String(SqlString.escape(input.avatarurl).replace(/["']/g, "")) || "";
+        const firstName = String(SqlString.escape(input.firstname).replace(/["']/g, "")) || "";
+        const lastName = String(SqlString.escape(input.lastname).replace(/["']/g, "")) || "";
+        const phoneNumber = String(SqlString.escape(input.phonenumber).replace(/["']/g, "")) || "";
+        const emailAddress = String(SqlString.escape(input.emailaddress).replace(/["']/g, "")) || "";
+
+        return {
+            id,
+            userId,
+            avatarUrl,
+            firstName,
+            lastName,
+            phoneNumber,
+            emailAddress
+        };
     }
 };
+
 const knex = Knex({
     client: 'pg',
     connection: {
@@ -37,15 +57,16 @@ const knex = Knex({
     }
 });
 const deleteUser = (userId) => knex('users').where('id', userId).del();
-const getUsers = () => knex.select('*').from('users').orderBy('id').catch(console.log);
-const getUser = (userId) => knex.select('*').from('users').where({
-    id: userId
-}).orderBy('id').catch(console.log);
+const getUsers = () => knex.select('*').from('users').orderBy('id').then(users => users.map(UserDto.fromDb)).catch(console.log);
+
 const updateUser = (user) => knex('users')
     .where({
         id: user.id
     })
-    .update(user);
+    .update(user)
+    .then(() => {
+        return getUsers();
+    }).catch(console.log);
 
 const createUser = async (user) => knex.insert(user)
     .into('users')
@@ -54,8 +75,7 @@ const createUser = async (user) => knex.insert(user)
     }).catch(console.log);
 
 const getHandler = async (req, res) => {
-    // this is where we want to to an id split
-
+    // We could extend this to return a single user based on a query param
     const users = await getUsers();
 
     return res.status(200).json({
@@ -66,8 +86,7 @@ const getHandler = async (req, res) => {
 };
 
 const postHandler = async (req, res) => {
-    const user = UserDto.extractUser(req.body);
-    console.log(user);
+    const user = UserDto.fromReq(req.body);
     const users = await createUser(user);
 
     return res.status(200).json({
@@ -78,9 +97,7 @@ const postHandler = async (req, res) => {
 };
 
 const putHandler = async (req, res) => {
-
-    const user = UserDto.extractUser(req.body);
-    console.log(user);
+    const user = UserDto.fromReq(req.body);
     const users = await updateUser(user);
 
     return res.status(200).json({
@@ -103,9 +120,6 @@ const deleteHandler = async (req, res) => {
 
     return res.status(204).json({});
 };
-// const putHandler = (req, res) => {
-//     return unknownHandler(req, res);
-// };
 
 const unknownHandler = (req, res) => {
     return res.status(500).json({})
