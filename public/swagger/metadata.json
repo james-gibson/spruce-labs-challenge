@@ -4,7 +4,6 @@
         "description": "",
         "version": "1.0.0",
         "title": "Spruce Labs Challenge",
-        "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "email": "james@gibsunas.co"
         },
@@ -29,7 +28,6 @@
                     "user"
                 ],
                 "summary": "Create user",
-                "description": "This can only be done by the logged in user.",
                 "operationId": "createUser",
                 "produces": [
                     "application/json"
