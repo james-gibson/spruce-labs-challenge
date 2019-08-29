@@ -42,7 +42,7 @@ The vue app.
 
 ### `index.js`
 
-Cloud function handler. See https://james-gibson.github.io/spruce-labs-challenge/swagger/
+Cloud function handler. See the [swagger docs](https://james-gibson.github.io/spruce-labs-challenge/swagger/)
 
 ## Notes
 
@@ -75,7 +75,6 @@ CREATE TABLE users (
 - Infrastructure as code. I manually created the db and cloud functions, I'd want to convert that into ansible/terraform/etc
 - CI/CD. Wire in cloud buildpacks to keep deployments up to date
 - Stronger UI/UX. Perhaps give the app a stronger focus
-- Avatars. Currently when the app loads you are assigned a random image. Ideally this would be user chosen
 - Architectural diagram. Detailed graphic identifying all the components of the app
 
 ## Bugs
